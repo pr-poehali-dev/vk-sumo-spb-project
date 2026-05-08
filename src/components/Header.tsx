@@ -18,7 +18,6 @@ const navItems: { label: string; page: Page }[] = [
   { label: "О федерации", page: "about" },
   { label: "Программы", page: "programs" },
   { label: "Расписание", page: "schedule" },
-  { label: "Тренеры", page: "coaches" },
   { label: "Новости", page: "news" },
   { label: "Галерея", page: "gallery" },
   { label: "Спонсоры", page: "sponsors" },
