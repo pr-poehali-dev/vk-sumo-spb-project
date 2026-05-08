@@ -28,8 +28,34 @@ export default function Header({ currentPage, navigate, cabinetRole, setCabinetR
   const [menuOpen, setMenuOpen] = useState(false);
   const [cabinetMenuOpen, setCabinetMenuOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
+  const [dropdownPos, setDropdownPos] = useState<{ top: number; right: number } | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const loginBtnRef = useRef<HTMLButtonElement>(null);
   const headerRef = useRef<HTMLElement>(null);
+
+  // Пересчитываем позицию дропдауна при открытии и при скролле/ресайзе
+  useEffect(() => {
+    if (!cabinetMenuOpen) {
+      setDropdownPos(null);
+      return;
+    }
+    function updatePos() {
+      if (loginBtnRef.current) {
+        const rect = loginBtnRef.current.getBoundingClientRect();
+        setDropdownPos({
+          top: rect.bottom + 8,
+          right: window.innerWidth - rect.right,
+        });
+      }
+    }
+    updatePos();
+    window.addEventListener("scroll", updatePos, true);
+    window.addEventListener("resize", updatePos);
+    return () => {
+      window.removeEventListener("scroll", updatePos, true);
+      window.removeEventListener("resize", updatePos);
+    };
+  }, [cabinetMenuOpen]);
 
   // Блокируем скролл body когда мобильное меню открыто
   useEffect(() => {
@@ -41,16 +67,23 @@ export default function Header({ currentPage, navigate, cabinetRole, setCabinetR
     return () => { document.body.style.overflow = ""; };
   }, [menuOpen]);
 
-  // Закрываем дропдаун при клике снаружи
+  // Закрываем дропдаун при клике снаружи (учитываем и кнопку, и сам портал)
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setCabinetMenuOpen(false);
+      const target = e.target as Node;
+      if (
+        loginBtnRef.current?.contains(target) ||
+        dropdownRef.current?.contains(target)
+      ) {
+        return;
       }
+      setCabinetMenuOpen(false);
     }
-    document.addEventListener("mousedown", handleClickOutside);
+    if (cabinetMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [cabinetMenuOpen]);
 
   // Закрываем всё при смене страницы
   useEffect(() => {
@@ -264,12 +297,67 @@ export default function Header({ currentPage, navigate, cabinetRole, setCabinetR
     document.body
   );
 
+  // Десктопный дропдаун «Войти» через портал — поверх Hero и любых stacking-context
+  const loginDropdownPortal = cabinetMenuOpen && dropdownPos && createPortal(
+    <div
+      ref={dropdownRef}
+      className="hidden xl:block"
+      style={{
+        position: "fixed",
+        top: dropdownPos.top,
+        right: dropdownPos.right,
+        width: 260,
+        backgroundColor: "#1a1a1a",
+        border: "1px solid #333",
+        borderRadius: 12,
+        boxShadow: "0 20px 50px rgba(0,0,0,0.6)",
+        overflow: "hidden",
+        zIndex: 999998,
+      }}
+    >
+      <div className="px-4 py-2.5 border-b" style={{ borderColor: "#2a2a2a" }}>
+        <span className="font-golos text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+          Выберите тип входа
+        </span>
+      </div>
+      <button
+        onClick={() => { setCabinetRole("parent"); setCabinetMenuOpen(false); navigate("parent-cabinet"); }}
+        className="flex items-center gap-3 w-full px-4 py-4 text-left font-golos text-sm text-white border-b hover:bg-white hover:bg-opacity-5 transition-colors"
+        style={{ borderColor: "#2a2a2a" }}
+      >
+        <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "rgba(201,150,58,0.15)" }}>
+          <Icon name="Users" size={16} style={{ color: "var(--sumo-gold)" }} />
+        </div>
+        <div>
+          <div className="font-semibold leading-tight">Кабинет родителя</div>
+          <div className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>Посещаемость ребёнка</div>
+        </div>
+      </button>
+      <button
+        onClick={() => { setCabinetRole("coach"); setCabinetMenuOpen(false); navigate("coach-cabinet"); }}
+        className="flex items-center gap-3 w-full px-4 py-4 text-left font-golos text-sm text-white hover:bg-white hover:bg-opacity-5 transition-colors"
+      >
+        <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "rgba(201,150,58,0.15)" }}>
+          <Icon name="ClipboardList" size={16} style={{ color: "var(--sumo-gold)" }} />
+        </div>
+        <div>
+          <div className="font-semibold leading-tight">Кабинет тренера</div>
+          <div className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>Отметка посещаемости</div>
+        </div>
+      </button>
+    </div>,
+    document.body
+  );
+
   return (
     <>
       <SupportModal open={supportOpen} onClose={() => setSupportOpen(false)} />
 
       {/* Мобильное меню через портал — вне любого родителя с overflow */}
       {mobileMenuPortal}
+
+      {/* Дропдаун «Войти» — fixed-портал, всегда поверх */}
+      {loginDropdownPortal}
 
       <header
         ref={headerRef}
@@ -385,56 +473,17 @@ export default function Header({ currentPage, navigate, cabinetRole, setCabinetR
                     </button>
                   </div>
                 ) : (
-                  /* Desktop дропдаун */
-                  <div className="relative hidden xl:block" ref={dropdownRef}>
-                    <button
-                      onClick={() => setCabinetMenuOpen((v) => !v)}
-                      className="flex items-center gap-1.5 px-4 py-2.5 rounded font-oswald text-sm font-semibold text-white whitespace-nowrap"
-                      style={{ backgroundColor: "var(--sumo-red)" }}
-                    >
-                      <Icon name="LogIn" size={14} />
-                      Войти
-                      <Icon name="ChevronDown" size={12} />
-                    </button>
-
-                    {cabinetMenuOpen && (
-                      <div
-                        className="absolute right-0 mt-2 w-60 rounded-xl border shadow-2xl overflow-hidden"
-                        style={{ backgroundColor: "#1a1a1a", borderColor: "#333", top: "100%", zIndex: 100000 }}
-                      >
-                        <div className="px-4 py-2.5 border-b" style={{ borderColor: "#2a2a2a" }}>
-                          <span className="font-golos text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
-                            Выберите тип входа
-                          </span>
-                        </div>
-                        <button
-                          onClick={() => { setCabinetRole("parent"); setCabinetMenuOpen(false); navigate("parent-cabinet"); }}
-                          className="flex items-center gap-3 w-full px-4 py-4 text-left font-golos text-sm text-white border-b hover:bg-white hover:bg-opacity-5 transition-colors"
-                          style={{ borderColor: "#2a2a2a" }}
-                        >
-                          <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "rgba(201,150,58,0.15)" }}>
-                            <Icon name="Users" size={16} style={{ color: "var(--sumo-gold)" }} />
-                          </div>
-                          <div>
-                            <div className="font-semibold leading-tight">Кабинет родителя</div>
-                            <div className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>Посещаемость ребёнка</div>
-                          </div>
-                        </button>
-                        <button
-                          onClick={() => { setCabinetRole("coach"); setCabinetMenuOpen(false); navigate("coach-cabinet"); }}
-                          className="flex items-center gap-3 w-full px-4 py-4 text-left font-golos text-sm text-white hover:bg-white hover:bg-opacity-5 transition-colors"
-                        >
-                          <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "rgba(201,150,58,0.15)" }}>
-                            <Icon name="ClipboardList" size={16} style={{ color: "var(--sumo-gold)" }} />
-                          </div>
-                          <div>
-                            <div className="font-semibold leading-tight">Кабинет тренера</div>
-                            <div className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>Отметка посещаемости</div>
-                          </div>
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                  /* Desktop кнопка входа — дропдаун рендерится через портал ниже */
+                  <button
+                    ref={loginBtnRef}
+                    onClick={() => setCabinetMenuOpen((v) => !v)}
+                    className="hidden xl:flex items-center gap-1.5 px-4 py-2.5 rounded font-oswald text-sm font-semibold text-white whitespace-nowrap"
+                    style={{ backgroundColor: "var(--sumo-red)" }}
+                  >
+                    <Icon name="LogIn" size={14} />
+                    Войти
+                    <Icon name="ChevronDown" size={12} className={`transition-transform ${cabinetMenuOpen ? "rotate-180" : ""}`} />
+                  </button>
                 )}
 
                 {/* Бургер */}
