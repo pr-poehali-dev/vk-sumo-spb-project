@@ -92,8 +92,8 @@ export default function Footer({ navigate }: FooterProps) {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 max-w-7xl py-12">
-        <div className="grid md:grid-cols-4 gap-8 mb-10">
+      <div className="container mx-auto px-4 max-w-7xl py-8 sm:py-12">
+        <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 mb-8 sm:mb-10">
           <div className="md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
               <img
