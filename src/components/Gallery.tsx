@@ -3,33 +3,28 @@ import Icon from "@/components/ui/icon";
 const photos = [
   {
     url: "https://cdn.poehali.dev/projects/a7adfde0-d5d3-47bd-abcd-7c5a055c4f82/bucket/765862c2-f20c-42f6-ba11-832e09ea47f0.jpg",
-    caption: "Чемпионат России по сумо 2026",
+    caption: "Чемпионат России по сумо 2026 — тяжёлый вес",
     cat: "Соревнования",
   },
   {
     url: "https://cdn.poehali.dev/projects/a7adfde0-d5d3-47bd-abcd-7c5a055c4f82/bucket/c282dfa6-cf53-4d4e-a782-7cb5b623cf34.jpg",
-    caption: "Чемпионат России — женский подиум 2026",
+    caption: "Чемпионат России по сумо 2026 — подиум",
     cat: "Соревнования",
   },
   {
     url: "https://cdn.poehali.dev/projects/a7adfde0-d5d3-47bd-abcd-7c5a055c4f82/bucket/14af06de-5df9-4621-9da8-4eaf5217d2e9.jpg",
-    caption: "Команда Федерации сумо СПб",
+    caption: "Команда Федерации сумо СПб на Чемпионате России",
     cat: "Команда",
   },
   {
     url: "https://cdn.poehali.dev/projects/a7adfde0-d5d3-47bd-abcd-7c5a055c4f82/bucket/b0977d01-a3ab-4784-94ce-44694939e772.jpg",
-    caption: "Призёры соревнований СПб",
+    caption: "Призёры Первенства Санкт-Петербурга",
     cat: "Достижения",
   },
   {
     url: "https://cdn.poehali.dev/projects/a7adfde0-d5d3-47bd-abcd-7c5a055c4f82/bucket/2ca149a0-77bf-4d56-a664-00deb51b0ddb.jpg",
-    caption: "Первенство СПб — групповое фото",
+    caption: "Первенство Санкт-Петербурга — групповое фото",
     cat: "Соревнования",
-  },
-  {
-    url: "https://cdn.poehali.dev/projects/a7adfde0-d5d3-47bd-abcd-7c5a055c4f82/files/058424fe-2a47-41e5-b42f-4bcbf6846ab1.jpg",
-    caption: "Тренировки в зале",
-    cat: "Тренировки",
   },
 ];
 
@@ -58,28 +53,67 @@ export default function Gallery() {
           </p>
         </div>
 
+        {/* Сетка: первое фото широкое на всю строку, остальные 2×2 */}
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-          {photos.map((photo, i) => (
-            <div key={i} className="relative group overflow-hidden rounded-lg" style={{ aspectRatio: i === 0 ? "16/10" : "4/3" }}>
+          {/* Широкая первая карточка */}
+          <div
+            className="relative col-span-2 md:col-span-2 group overflow-hidden rounded-lg"
+            style={{ aspectRatio: "16/7" }}
+          >
+            <img
+              src={photos[0].url}
+              alt={photos[0].caption}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              style={{ objectPosition: "center 30%" }}
+            />
+            <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 55%)" }} />
+            <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
+              <span className="font-golos text-xs font-semibold text-white px-2 py-0.5 rounded mb-1 inline-block" style={{ backgroundColor: catColors[photos[0].cat] }}>
+                {photos[0].cat}
+              </span>
+              <div className="font-golos text-sm sm:text-base text-white leading-snug font-semibold mt-1">{photos[0].caption}</div>
+            </div>
+          </div>
+
+          {/* Третья — вертикальная правая */}
+          <div
+            className="relative row-span-2 group overflow-hidden rounded-lg hidden md:block"
+            style={{ aspectRatio: "3/4" }}
+          >
+            <img
+              src={photos[2].url}
+              alt={photos[2].caption}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              style={{ objectPosition: "center top" }}
+            />
+            <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 55%)" }} />
+            <div className="absolute bottom-0 left-0 right-0 p-4">
+              <span className="font-golos text-xs font-semibold text-white px-2 py-0.5 rounded mb-1 inline-block" style={{ backgroundColor: catColors[photos[2].cat] }}>
+                {photos[2].cat}
+              </span>
+              <div className="font-golos text-sm text-white leading-snug mt-1">{photos[2].caption}</div>
+            </div>
+          </div>
+
+          {/* Остальные карточки */}
+          {[photos[1], photos[3], photos[4]].map((photo, i) => (
+            <div
+              key={i}
+              className="relative group overflow-hidden rounded-lg"
+              style={{ aspectRatio: "4/3" }}
+            >
               <img
                 src={photo.url}
                 alt={photo.caption}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 style={{ objectPosition: "center top" }}
               />
-              <div className="absolute inset-0 transition-all duration-300"
-                style={{ background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 50%)" }}>
-              </div>
+              <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 55%)" }} />
               <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
-                <span
-                  className="font-golos text-xs font-semibold text-white px-2 py-0.5 rounded mb-1 inline-block"
-                  style={{ backgroundColor: catColors[photo.cat] || "var(--sumo-red)" }}
-                >
+                <span className="font-golos text-xs font-semibold text-white px-2 py-0.5 rounded mb-1 inline-block" style={{ backgroundColor: catColors[photo.cat] || "var(--sumo-red)" }}>
                   {photo.cat}
                 </span>
-                <div className="font-golos text-xs sm:text-sm text-white leading-snug opacity-90">
-                  {photo.caption}
-                </div>
+                <div className="font-golos text-xs sm:text-sm text-white leading-snug mt-0.5">{photo.caption}</div>
               </div>
             </div>
           ))}
