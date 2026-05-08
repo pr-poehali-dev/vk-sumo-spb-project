@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Page } from "@/App";
 import Icon from "@/components/ui/icon";
 
+const LOGO_URL = "https://cdn.poehali.dev/projects/a7adfde0-d5d3-47bd-abcd-7c5a055c4f82/bucket/7faf7e86-bd52-4506-ad94-567ea17e46d1.jpg";
+
 interface HeaderProps {
   currentPage: Page;
   navigate: (page: Page) => void;
@@ -36,30 +38,28 @@ export default function Header({ currentPage, navigate, cabinetRole, setCabinetR
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-sumo-black border-b border-[#2a2a2a]" style={{ backgroundColor: "var(--sumo-black)" }}>
+    <header className="sticky top-0 z-50 border-b border-[#2a2a2a]" style={{ backgroundColor: "var(--sumo-black)" }}>
       <div className="container mx-auto px-4 max-w-7xl">
         <div className="flex items-center justify-between h-16">
-          <button
-            onClick={() => handleNav("home")}
-            className="flex items-center gap-3 group"
-          >
-            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: "var(--sumo-red)" }}>
-              <span className="font-oswald font-bold text-white text-sm">СУМ</span>
-            </div>
+          <button onClick={() => handleNav("home")} className="flex items-center gap-3 group">
+            <img
+              src={LOGO_URL}
+              alt="Федерация сумо Санкт-Петербурга"
+              className="w-11 h-11 rounded-full object-cover border-2"
+              style={{ borderColor: "var(--sumo-gold)" }}
+            />
             <div className="hidden sm:block text-left">
-              <div className="font-oswald font-bold text-white text-sm leading-tight">ФЕДЕРАЦИЯ СУМО</div>
+              <div className="font-oswald font-bold text-white text-sm leading-tight tracking-wide">ФЕДЕРАЦИЯ СУМО</div>
               <div className="font-golos text-xs leading-tight" style={{ color: "var(--sumo-gold)" }}>Санкт-Петербург</div>
             </div>
           </button>
 
-          <nav className="hidden lg:flex items-center gap-6">
+          <nav className="hidden lg:flex items-center gap-5">
             {navItems.map((item) => (
               <button
                 key={item.page}
                 onClick={() => handleNav(item.page)}
-                className={`nav-link font-oswald text-sm font-medium tracking-wide transition-colors ${
-                  currentPage === item.page ? "active" : ""
-                }`}
+                className={`nav-link font-oswald text-sm font-medium tracking-wide transition-colors ${currentPage === item.page ? "active" : ""}`}
                 style={{ color: currentPage === item.page ? "var(--sumo-gold)" : "rgba(255,255,255,0.8)" }}
               >
                 {item.label}
@@ -114,11 +114,7 @@ export default function Header({ currentPage, navigate, cabinetRole, setCabinetR
                 )}
               </div>
             )}
-
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="lg:hidden p-2 text-white"
-            >
+            <button onClick={() => setMenuOpen(!menuOpen)} className="lg:hidden p-2 text-white">
               <Icon name={menuOpen ? "X" : "Menu"} size={22} />
             </button>
           </div>
@@ -132,10 +128,7 @@ export default function Header({ currentPage, navigate, cabinetRole, setCabinetR
               key={item.page}
               onClick={() => handleNav(item.page)}
               className="block w-full text-left px-6 py-3 font-oswald text-sm tracking-wide border-b"
-              style={{
-                color: currentPage === item.page ? "var(--sumo-gold)" : "rgba(255,255,255,0.8)",
-                borderColor: "#2a2a2a"
-              }}
+              style={{ color: currentPage === item.page ? "var(--sumo-gold)" : "rgba(255,255,255,0.8)", borderColor: "#2a2a2a" }}
             >
               {item.label}
             </button>

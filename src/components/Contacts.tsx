@@ -26,9 +26,9 @@ export default function Contacts({ full }: ContactsProps) {
             </h3>
             <div className="space-y-4">
               {[
-                { icon: "Phone", label: "Телефон", value: "+7 (812) 123-45-67" },
-                { icon: "Mail", label: "Email", value: "info@sumo-spb.ru" },
-                { icon: "Globe", label: "ВКонтакте", value: "vk.com/sumo_spb" },
+                { icon: "Globe", label: "Сайт", value: "sumospb.ru", href: "https://sumospb.ru" },
+                { icon: "Globe", label: "ВКонтакте", value: "vk.com/sumospb", href: "https://vk.com/sumospb" },
+                { icon: "Mail", label: "Email", value: "sumospb@mail.ru", href: "mailto:sumospb@mail.ru" },
               ].map((c) => (
                 <div key={c.label} className="flex items-start gap-4">
                   <div className="w-9 h-9 rounded flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "rgba(201,150,58,0.15)" }}>
@@ -36,7 +36,9 @@ export default function Contacts({ full }: ContactsProps) {
                   </div>
                   <div>
                     <div className="font-golos text-xs mb-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>{c.label}</div>
-                    <div className="font-golos text-sm text-white">{c.value}</div>
+                    <a href={c.href} target="_blank" rel="noreferrer" className="font-golos text-sm text-white hover:underline">
+                      {c.value}
+                    </a>
                   </div>
                 </div>
               ))}
@@ -45,24 +47,30 @@ export default function Contacts({ full }: ContactsProps) {
 
           <div>
             <h3 className="font-oswald font-semibold text-lg mb-5" style={{ color: "var(--sumo-gold)" }}>
-              Залы
+              Адрес
             </h3>
             <div className="space-y-4">
-              {[
-                { name: "Зал №1", addr: "Невский пр., 147, Невский р-н" },
-                { name: "Зал №2", addr: "ул. Садовая, 32, Центральный р-н" },
-                { name: "Зал №3", addr: "пр. Энгельса, 27, Выборгский р-н" },
-              ].map((hall) => (
-                <div key={hall.name} className="flex items-start gap-4">
-                  <div className="w-9 h-9 rounded flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "rgba(201,150,58,0.15)" }}>
-                    <Icon name="MapPin" size={16} style={{ color: "var(--sumo-gold)" }} />
-                  </div>
-                  <div>
-                    <div className="font-golos text-xs font-semibold mb-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>{hall.name}</div>
-                    <div className="font-golos text-sm text-white">{hall.addr}</div>
+              <div className="flex items-start gap-4">
+                <div className="w-9 h-9 rounded flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "rgba(201,150,58,0.15)" }}>
+                  <Icon name="MapPin" size={16} style={{ color: "var(--sumo-gold)" }} />
+                </div>
+                <div>
+                  <div className="font-golos text-xs font-semibold mb-1" style={{ color: "rgba(255,255,255,0.5)" }}>Юридический / почтовый адрес</div>
+                  <div className="font-golos text-sm text-white leading-relaxed">
+                    г. Санкт-Петербург<br />
+                    (уточняйте актуальный адрес на sumospb.ru)
                   </div>
                 </div>
-              ))}
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="w-9 h-9 rounded flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "rgba(201,150,58,0.15)" }}>
+                  <Icon name="Clock" size={16} style={{ color: "var(--sumo-gold)" }} />
+                </div>
+                <div>
+                  <div className="font-golos text-xs font-semibold mb-1" style={{ color: "rgba(255,255,255,0.5)" }}>Режим работы</div>
+                  <div className="font-golos text-sm text-white">Пн–Пт: 9:00 – 21:00<br />Сб: 9:00 – 15:00</div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -73,19 +81,15 @@ export default function Contacts({ full }: ContactsProps) {
             <div className="space-y-2 font-golos text-sm" style={{ color: "rgba(255,255,255,0.7)" }}>
               <div>
                 <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 11 }}>Полное наименование</span><br />
-                РОО «Федерация сумо Санкт-Петербурга»
+                Санкт-Петербургская региональная общественная организация «Федерация сумо Санкт-Петербурга»
               </div>
-              <div>
-                <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 11 }}>ИНН / КПП</span><br />
-                7801234567 / 780101001
+              <div className="pt-2">
+                <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 11 }}>Сокращённое наименование</span><br />
+                СПРООО «Федерация сумо СПб»
               </div>
-              <div>
-                <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 11 }}>ОГРН</span><br />
-                1037800123456
-              </div>
-              <div>
-                <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 11 }}>Юридический адрес</span><br />
-                190000, г. Санкт-Петербург, Невский пр., д. 147
+              <div className="pt-2">
+                <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 11 }}>Аккредитация</span><br />
+                Федерация сумо России
               </div>
             </div>
           </div>

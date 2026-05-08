@@ -1,6 +1,8 @@
 import { Page } from "@/App";
 import Icon from "@/components/ui/icon";
 
+const LOGO_URL = "https://cdn.poehali.dev/projects/a7adfde0-d5d3-47bd-abcd-7c5a055c4f82/bucket/7faf7e86-bd52-4506-ad94-567ea17e46d1.jpg";
+
 interface HeroProps {
   navigate: (page: Page) => void;
 }
@@ -19,11 +21,24 @@ export default function Hero({ navigate }: HeroProps) {
 
       <div className="relative z-10 container mx-auto px-4 max-w-7xl py-20">
         <div className="max-w-2xl animate-fade-in">
-          <div className="flex items-center gap-3 mb-6">
-            <span className="section-divider" />
-            <span className="font-oswald text-sm tracking-[0.2em] uppercase" style={{ color: "var(--sumo-gold)" }}>
-              Санкт-Петербург
-            </span>
+          <div className="flex items-center gap-4 mb-8">
+            <img
+              src={LOGO_URL}
+              alt="Логотип Федерации сумо Санкт-Петербурга"
+              className="w-20 h-20 rounded-full object-cover border-2 shadow-xl"
+              style={{ borderColor: "var(--sumo-gold)" }}
+            />
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="section-divider" />
+                <span className="font-oswald text-xs tracking-[0.2em] uppercase" style={{ color: "var(--sumo-gold)" }}>
+                  Санкт-Петербург
+                </span>
+              </div>
+              <div className="font-golos text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
+                Официальный сайт федерации
+              </div>
+            </div>
           </div>
 
           <h1 className="font-oswald font-bold text-white leading-none mb-6" style={{ fontSize: "clamp(2.5rem, 6vw, 4.5rem)" }}>
@@ -33,8 +48,9 @@ export default function Hero({ navigate }: HeroProps) {
           </h1>
 
           <p className="font-golos text-lg mb-10 leading-relaxed" style={{ color: "rgba(255,255,255,0.75)" }}>
-            Развиваем традиционное японское единоборство в Северной столице с 2003 года.
-            Секции для детей и взрослых, профессиональные тренеры, официальные соревнования.
+            Аккредитованная организация Федерации сумо России. Развиваем традиционное единоборство
+            в Северной столице. Секции для детей от 5 лет и взрослых, профессиональные тренеры,
+            официальные соревнования.
           </p>
 
           <div className="flex flex-wrap gap-4">

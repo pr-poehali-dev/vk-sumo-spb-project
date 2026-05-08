@@ -8,6 +8,7 @@ import Programs from "@/components/Programs";
 import Schedule from "@/components/Schedule";
 import Coaches from "@/components/Coaches";
 import News from "@/components/News";
+import NewsHome from "@/components/NewsHome";
 import Gallery from "@/components/Gallery";
 import Contacts from "@/components/Contacts";
 import Footer from "@/components/Footer";
@@ -47,8 +48,8 @@ export default function App() {
             <About navigate={navigate} />
             <Programs navigate={navigate} />
             <Schedule />
+            <NewsHome navigate={navigate} />
             <Coaches navigate={navigate} />
-            <News navigate={navigate} />
             <Contacts />
           </>
         )}
