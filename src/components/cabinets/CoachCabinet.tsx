@@ -7,9 +7,9 @@ interface CoachCabinetProps {
 }
 
 const groups = [
-  { id: "jun", label: "Юниоры (13–17)", time: "18:00–19:30", day: "Понедельник" },
-  { id: "adult", label: "Взрослые", time: "20:00–21:30", day: "Понедельник" },
-  { id: "kids", label: "Детская (8–12)", time: "16:30–17:30", day: "Среда" },
+  { id: "jun", label: "Юниоры (13–17)", time: "18:00–19:30", day: "Пн/Ср/Пт" },
+  { id: "adult", label: "Взрослые", time: "20:00–21:30", day: "Пн/Ср/Пт" },
+  { id: "kids", label: "Детская (8–12)", time: "16:30–17:30", day: "Вт/Чт" },
 ];
 
 const students: Record<string, { id: number; name: string; age: number }[]> = {
@@ -64,50 +64,47 @@ export default function CoachCabinet({ navigate }: CoachCabinetProps) {
     setSaved(false);
   };
 
-  const handleSave = () => {
-    setSaved(true);
-  };
-
   const presentCount = list.filter((s) => attendance[s.id] === "present").length;
   const absentCount = list.filter((s) => attendance[s.id] === "absent").length;
   const unknownCount = list.filter((s) => !attendance[s.id] || attendance[s.id] === "unknown").length;
-
   const today = new Date().toLocaleDateString("ru-RU");
 
   return (
-    <div className="min-h-screen pt-8 pb-20" style={{ backgroundColor: "#F5F2EE" }}>
-      <div className="container mx-auto px-4 max-w-4xl">
-        <div className="flex items-center gap-4 mb-8">
-          <button
-            onClick={() => navigate("home")}
-            className="flex items-center gap-2 font-golos text-sm"
-            style={{ color: "var(--sumo-red)" }}
-          >
-            <Icon name="ArrowLeft" size={16} />
-            На главную
-          </button>
-        </div>
+    <div className="min-h-screen pb-20" style={{ backgroundColor: "#F5F2EE" }}>
+      <div className="container mx-auto px-3 sm:px-4 max-w-3xl py-4 sm:py-8">
 
-        <div className="p-6 rounded mb-6" style={{ backgroundColor: "var(--sumo-black)" }}>
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "var(--sumo-red)" }}>
-              <Icon name="ClipboardList" size={24} style={{ color: "white" }} />
+        {/* Назад */}
+        <button
+          onClick={() => navigate("home")}
+          className="flex items-center gap-2 font-golos text-sm mb-4 sm:mb-6"
+          style={{ color: "var(--sumo-red)" }}
+        >
+          <Icon name="ArrowLeft" size={16} />
+          На главную
+        </button>
+
+        {/* Шапка */}
+        <div className="p-4 sm:p-6 rounded-xl mb-4 sm:mb-5" style={{ backgroundColor: "var(--sumo-black)" }}>
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "var(--sumo-red)" }}>
+              <Icon name="ClipboardList" size={22} style={{ color: "white" }} />
             </div>
             <div>
-              <div className="font-oswald font-bold text-lg text-white">Кабинет тренера</div>
-              <div className="font-golos text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
-                Смирнов Константин Евгеньевич · Сегодня: {today}
+              <div className="font-oswald font-bold text-base sm:text-lg text-white">Кабинет тренера</div>
+              <div className="font-golos text-xs sm:text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
+                Сегодня: {today}
               </div>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 mb-6">
+        {/* Выбор группы — горизонтальный скролл на мобиле */}
+        <div className="flex gap-2 mb-4 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
           {groups.map((g) => (
             <button
               key={g.id}
               onClick={() => { setSelectedGroup(g.id); setAttendance({}); setSaved(false); }}
-              className="flex items-center gap-2 px-4 py-2.5 rounded font-oswald text-sm font-semibold tracking-wide transition-all"
+              className="flex-shrink-0 flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg font-oswald text-xs sm:text-sm font-semibold tracking-wide transition-all whitespace-nowrap"
               style={{
                 backgroundColor: selectedGroup === g.id ? "var(--sumo-red)" : "white",
                 color: selectedGroup === g.id ? "white" : "#444",
@@ -115,59 +112,63 @@ export default function CoachCabinet({ navigate }: CoachCabinetProps) {
               }}
             >
               {g.label}
-              <span className="font-golos text-xs opacity-70">({students[g.id].length})</span>
+              <span className="font-golos text-xs opacity-60">({students[g.id].length})</span>
             </button>
           ))}
         </div>
 
-        <div className="flex gap-1 mb-4 p-1 rounded" style={{ backgroundColor: "#E8E0D8" }}>
+        {/* Табы */}
+        <div className="flex gap-1 mb-4 p-1 rounded-lg" style={{ backgroundColor: "#E8E0D8" }}>
           {[
-            { key: "mark", label: "Отметить явку", icon: "UserCheck" },
+            { key: "mark", label: "Явка", icon: "UserCheck" },
             { key: "history", label: "История", icon: "History" },
-            { key: "notify", label: "Уведомление", icon: "Bell" },
+            { key: "notify", label: "Оповещение", icon: "Bell" },
           ].map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key as typeof activeTab)}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded font-oswald text-sm font-semibold tracking-wide transition-all"
+              className="flex-1 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 py-2.5 rounded-md font-oswald text-xs sm:text-sm font-semibold tracking-wide transition-all"
               style={{
                 backgroundColor: activeTab === tab.key ? "var(--sumo-black)" : "transparent",
                 color: activeTab === tab.key ? "white" : "#666",
               }}
             >
-              <Icon name={tab.icon} size={15} />
-              {tab.label}
+              <Icon name={tab.icon} size={14} />
+              <span>{tab.label}</span>
             </button>
           ))}
         </div>
 
+        {/* Отметить явку */}
         {activeTab === "mark" && (
           <>
-            <div className="bg-white rounded border mb-4" style={{ borderColor: "#E8E0D8" }}>
-              <div className="px-6 py-4 border-b flex items-center justify-between flex-wrap gap-3" style={{ borderColor: "#E8E0D8" }}>
-                <div>
-                  <h3 className="font-oswald font-bold text-base" style={{ color: "var(--sumo-black)" }}>
-                    {group.label} · {group.day}, {group.time}
-                  </h3>
-                  <div className="font-golos text-xs mt-0.5" style={{ color: "#999" }}>
-                    Нажмите на имя, чтобы отметить: ✓ присутствует / ✗ отсутствует
+            <div className="bg-white rounded-xl border mb-3" style={{ borderColor: "#E8E0D8" }}>
+              <div className="px-4 sm:px-5 py-3 border-b" style={{ borderColor: "#E8E0D8" }}>
+                <div className="flex items-start sm:items-center justify-between gap-2 flex-wrap">
+                  <div>
+                    <div className="font-oswald font-bold text-sm sm:text-base" style={{ color: "var(--sumo-black)" }}>
+                      {group.label}
+                    </div>
+                    <div className="font-golos text-xs mt-0.5" style={{ color: "#999" }}>
+                      {group.day} · {group.time} · Нажмите для отметки
+                    </div>
                   </div>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => markAll("present")}
-                    className="px-3 py-1.5 rounded font-golos text-xs font-semibold"
-                    style={{ backgroundColor: "#E8F5E9", color: "#2E7D32" }}
-                  >
-                    Все пришли
-                  </button>
-                  <button
-                    onClick={() => markAll("absent")}
-                    className="px-3 py-1.5 rounded font-golos text-xs font-semibold"
-                    style={{ backgroundColor: "#FEE2E2", color: "#dc2626" }}
-                  >
-                    Все отсутствуют
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => markAll("present")}
+                      className="px-2.5 py-1.5 rounded font-golos text-xs font-semibold whitespace-nowrap"
+                      style={{ backgroundColor: "#E8F5E9", color: "#2E7D32" }}
+                    >
+                      ✓ Все
+                    </button>
+                    <button
+                      onClick={() => markAll("absent")}
+                      className="px-2.5 py-1.5 rounded font-golos text-xs font-semibold whitespace-nowrap"
+                      style={{ backgroundColor: "#FEE2E2", color: "#dc2626" }}
+                    >
+                      ✗ Никого
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -177,15 +178,17 @@ export default function CoachCabinet({ navigate }: CoachCabinetProps) {
                   return (
                     <div
                       key={student.id}
-                      className="flex items-center justify-between px-6 py-3.5 cursor-pointer hover:bg-gray-50 transition-colors"
+                      className="flex items-center justify-between px-4 sm:px-5 py-3 cursor-pointer active:bg-gray-50"
                       onClick={() => toggleStatus(student.id)}
+                      style={{ WebkitTapHighlightColor: "transparent" }}
                     >
                       <div className="flex items-center gap-3">
                         <div
-                          className="w-8 h-8 rounded-full flex items-center justify-center font-oswald font-bold text-sm"
+                          className="w-9 h-9 rounded-full flex items-center justify-center font-oswald font-bold text-sm flex-shrink-0"
                           style={{
                             backgroundColor: status === "present" ? "#16a34a" : status === "absent" ? "#dc2626" : "#e5e7eb",
                             color: status === "unknown" ? "#6b7280" : "white",
+                            transition: "background-color 0.15s",
                           }}
                         >
                           {status === "present" ? "✓" : status === "absent" ? "✗" : student.id}
@@ -196,13 +199,14 @@ export default function CoachCabinet({ navigate }: CoachCabinetProps) {
                         </div>
                       </div>
                       <span
-                        className="font-golos text-xs font-semibold px-3 py-1.5 rounded"
+                        className="font-golos text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0"
                         style={{
                           backgroundColor: status === "present" ? "#E8F5E9" : status === "absent" ? "#FEE2E2" : "#F3F4F6",
                           color: status === "present" ? "#16a34a" : status === "absent" ? "#dc2626" : "#9CA3AF",
+                          transition: "all 0.15s",
                         }}
                       >
-                        {status === "present" ? "Присутствует" : status === "absent" ? "Отсутствует" : "Не отмечен"}
+                        {status === "present" ? "Пришёл" : status === "absent" ? "Нет" : "—"}
                       </span>
                     </div>
                   );
@@ -210,43 +214,32 @@ export default function CoachCabinet({ navigate }: CoachCabinetProps) {
               </div>
             </div>
 
-            <div className="flex items-center gap-4 mb-4">
-              <div className="flex gap-4 flex-1">
-                <div className="flex items-center gap-2 font-golos text-sm" style={{ color: "#16a34a" }}>
-                  <Icon name="CheckCircle" size={16} />
-                  Пришли: <strong>{presentCount}</strong>
-                </div>
-                <div className="flex items-center gap-2 font-golos text-sm" style={{ color: "#dc2626" }}>
-                  <Icon name="XCircle" size={16} />
-                  Отсутствуют: <strong>{absentCount}</strong>
-                </div>
-                <div className="flex items-center gap-2 font-golos text-sm" style={{ color: "#9CA3AF" }}>
-                  <Icon name="HelpCircle" size={16} />
-                  Не отмечены: <strong>{unknownCount}</strong>
-                </div>
+            {/* Итог + кнопка сохранить */}
+            <div className="flex items-center justify-between gap-3 p-4 bg-white rounded-xl border" style={{ borderColor: "#E8E0D8" }}>
+              <div className="flex gap-3 sm:gap-4 flex-wrap">
+                <span className="font-golos text-sm font-semibold" style={{ color: "#16a34a" }}>✓ {presentCount}</span>
+                <span className="font-golos text-sm font-semibold" style={{ color: "#dc2626" }}>✗ {absentCount}</span>
+                <span className="font-golos text-sm" style={{ color: "#9CA3AF" }}>? {unknownCount}</span>
               </div>
-
               <button
-                onClick={handleSave}
+                onClick={() => setSaved(true)}
                 disabled={saved}
-                className="flex items-center gap-2 px-6 py-3 rounded font-oswald font-semibold text-sm tracking-wide text-white transition-opacity"
-                style={{
-                  backgroundColor: saved ? "#16a34a" : "var(--sumo-red)",
-                  opacity: saved ? 0.8 : 1,
-                }}
+                className="flex items-center gap-2 px-4 sm:px-6 py-2.5 rounded-lg font-oswald font-bold text-xs sm:text-sm text-white flex-shrink-0"
+                style={{ backgroundColor: saved ? "#16a34a" : "var(--sumo-red)", transition: "background-color 0.2s" }}
               >
-                <Icon name={saved ? "Check" : "Save"} size={16} />
-                {saved ? "Сохранено!" : "Сохранить явку"}
+                <Icon name={saved ? "Check" : "Save"} size={15} />
+                {saved ? "Сохранено!" : "Сохранить"}
               </button>
             </div>
           </>
         )}
 
+        {/* История */}
         {activeTab === "history" && (
-          <div className="bg-white rounded border" style={{ borderColor: "#E8E0D8" }}>
-            <div className="px-6 py-4 border-b" style={{ borderColor: "#E8E0D8" }}>
-              <h3 className="font-oswald font-bold text-base" style={{ color: "var(--sumo-black)" }}>
-                История посещений — {group.label}
+          <div className="bg-white rounded-xl border overflow-hidden" style={{ borderColor: "#E8E0D8" }}>
+            <div className="px-4 sm:px-5 py-3 border-b" style={{ borderColor: "#E8E0D8" }}>
+              <h3 className="font-oswald font-bold text-sm sm:text-base" style={{ color: "var(--sumo-black)" }}>
+                История — {group.label}
               </h3>
             </div>
             <div className="divide-y" style={{ borderColor: "#F5F2EE" }}>
@@ -257,16 +250,16 @@ export default function CoachCabinet({ navigate }: CoachCabinetProps) {
                 { date: "25.04.2026", present: 7, absent: 0, total: 7 },
                 { date: "23.04.2026", present: 6, absent: 1, total: 7 },
               ].map((entry) => (
-                <div key={entry.date} className="flex items-center justify-between px-6 py-4">
+                <div key={entry.date} className="flex items-center justify-between px-4 sm:px-5 py-3">
                   <div>
                     <div className="font-oswald font-semibold text-sm" style={{ color: "var(--sumo-black)" }}>{entry.date}</div>
-                    <div className="font-golos text-xs mt-0.5" style={{ color: "#999" }}>{group.day} · {group.time}</div>
+                    <div className="font-golos text-xs mt-0.5" style={{ color: "#999" }}>{group.time}</div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <span className="font-golos text-sm" style={{ color: "#16a34a" }}>✓ {entry.present}</span>
-                    <span className="font-golos text-sm" style={{ color: "#dc2626" }}>✗ {entry.absent}</span>
-                    <span className="font-golos text-xs px-2 py-1 rounded" style={{ backgroundColor: "#F5F2EE", color: "#666" }}>
-                      {Math.round((entry.present / entry.total) * 100)}% явка
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <span className="font-golos text-sm font-semibold" style={{ color: "#16a34a" }}>✓ {entry.present}</span>
+                    <span className="font-golos text-sm font-semibold" style={{ color: "#dc2626" }}>✗ {entry.absent}</span>
+                    <span className="font-golos text-xs px-2 py-1 rounded-full" style={{ backgroundColor: "#F5F2EE", color: "#666" }}>
+                      {Math.round((entry.present / entry.total) * 100)}%
                     </span>
                   </div>
                 </div>
@@ -275,28 +268,29 @@ export default function CoachCabinet({ navigate }: CoachCabinetProps) {
           </div>
         )}
 
+        {/* Уведомление */}
         {activeTab === "notify" && (
-          <div className="bg-white rounded border p-6" style={{ borderColor: "#E8E0D8" }}>
-            <div className="flex items-center gap-3 mb-6">
-              <Icon name="Bell" size={20} style={{ color: "var(--sumo-red)" }} />
-              <h3 className="font-oswald font-bold text-base" style={{ color: "var(--sumo-black)" }}>
-                Отправить уведомление родителям
+          <div className="bg-white rounded-xl border p-4 sm:p-6" style={{ borderColor: "#E8E0D8" }}>
+            <div className="flex items-center gap-2 mb-5">
+              <Icon name="Bell" size={18} style={{ color: "var(--sumo-red)" }} />
+              <h3 className="font-oswald font-bold text-sm sm:text-base" style={{ color: "var(--sumo-black)" }}>
+                Отправить родителям
               </h3>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="font-golos text-xs mb-1 block" style={{ color: "#888" }}>Тип уведомления</label>
+                <div className="font-golos text-xs mb-2" style={{ color: "#888" }}>Тип</div>
                 <div className="flex flex-wrap gap-2">
                   {[
-                    { label: "Отмена тренировки", icon: "XCircle", color: "#dc2626", bg: "#FEE2E2" },
-                    { label: "Перенос тренировки", icon: "Clock", color: "#d97706", bg: "#FEF3C7" },
-                    { label: "Изменение расписания", icon: "Calendar", color: "#1565C0", bg: "#E3F2FD" },
-                    { label: "Общая информация", icon: "Info", color: "#555", bg: "#F5F2EE" },
+                    { label: "Отмена", icon: "XCircle", color: "#dc2626", bg: "#FEE2E2" },
+                    { label: "Перенос", icon: "Clock", color: "#d97706", bg: "#FEF3C7" },
+                    { label: "Изменение", icon: "Calendar", color: "#1565C0", bg: "#E3F2FD" },
+                    { label: "Инфо", icon: "Info", color: "#555", bg: "#F5F2EE" },
                   ].map((type) => (
                     <button
                       key={type.label}
-                      className="flex items-center gap-2 px-3 py-2 rounded font-golos text-xs font-semibold border transition-colors hover:opacity-80"
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-lg font-golos text-xs font-semibold border"
                       style={{ backgroundColor: type.bg, color: type.color, borderColor: type.bg }}
                     >
                       <Icon name={type.icon} size={13} />
@@ -307,30 +301,28 @@ export default function CoachCabinet({ navigate }: CoachCabinetProps) {
               </div>
 
               <div>
-                <label className="font-golos text-xs mb-1 block" style={{ color: "#888" }}>Группа</label>
-                <select className="w-full px-4 py-2.5 rounded border font-golos text-sm" style={{ borderColor: "#E8E0D8", color: "#333" }}>
+                <div className="font-golos text-xs mb-1.5" style={{ color: "#888" }}>Группа</div>
+                <select className="w-full px-3 py-2.5 rounded-lg border font-golos text-sm" style={{ borderColor: "#E8E0D8", color: "#333", fontSize: 16 }}>
                   <option>Все группы</option>
-                  {groups.map((g) => (
-                    <option key={g.id}>{g.label}</option>
-                  ))}
+                  {groups.map((g) => <option key={g.id}>{g.label}</option>)}
                 </select>
               </div>
 
               <div>
-                <label className="font-golos text-xs mb-1 block" style={{ color: "#888" }}>Текст уведомления</label>
+                <div className="font-golos text-xs mb-1.5" style={{ color: "#888" }}>Текст</div>
                 <textarea
-                  className="w-full px-4 py-3 rounded border font-golos text-sm"
-                  style={{ borderColor: "#E8E0D8", color: "#333" }}
+                  className="w-full px-3 py-2.5 rounded-lg border font-golos text-sm"
+                  style={{ borderColor: "#E8E0D8", color: "#333", fontSize: 16 }}
                   rows={4}
-                  placeholder="Например: Тренировка в понедельник 12 мая отменяется. Следующая тренировка — в среду 14 мая в обычное время."
+                  placeholder="Например: Тренировка в среду 14 мая переносится на пятницу 16 мая."
                 />
               </div>
 
               <button
-                className="flex items-center gap-2 px-6 py-3 font-oswald font-semibold text-sm tracking-wide text-white rounded"
+                className="flex items-center gap-2 w-full sm:w-auto justify-center px-6 py-3 rounded-lg font-oswald font-bold text-sm text-white"
                 style={{ backgroundColor: "var(--sumo-red)" }}
               >
-                <Icon name="Send" size={16} />
+                <Icon name="Send" size={15} />
                 Отправить уведомление
               </button>
             </div>

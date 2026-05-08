@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Page } from "@/App";
 import Icon from "@/components/ui/icon";
 import SupportModal from "@/components/SupportModal";
@@ -27,6 +27,24 @@ export default function Header({ currentPage, navigate, cabinetRole, setCabinetR
   const [menuOpen, setMenuOpen] = useState(false);
   const [cabinetMenuOpen, setCabinetMenuOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Закрываем дропдаун при клике снаружи
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setCabinetMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Закрываем мобильное меню при изменении страницы
+  useEffect(() => {
+    setMenuOpen(false);
+    setCabinetMenuOpen(false);
+  }, [currentPage]);
 
   const handleNav = (page: Page) => {
     navigate(page);
@@ -43,84 +61,80 @@ export default function Header({ currentPage, navigate, cabinetRole, setCabinetR
     <>
       <SupportModal open={supportOpen} onClose={() => setSupportOpen(false)} />
 
-      <header className="sticky top-0 z-50" style={{ backgroundColor: "var(--sumo-black)" }}>
-        {/* РУСАДА топ-бар */}
-        <div className="border-b" style={{ backgroundColor: "#0a0a0a", borderColor: "#222" }}>
+      {/* Портал для дропдауна кабинета — рендерится поверх всего */}
+      {cabinetMenuOpen && !cabinetRole && (
+        <div
+          className="fixed inset-0 z-[9998]"
+          onClick={() => setCabinetMenuOpen(false)}
+        />
+      )}
+
+      <header className="sticky top-0 z-[9999]" style={{ backgroundColor: "var(--sumo-black)" }}>
+
+        {/* Топ-бар РУСАДА */}
+        <div className="border-b" style={{ backgroundColor: "#0a0a0a", borderColor: "#1e1e1e" }}>
           <div className="container mx-auto px-3 sm:px-4 max-w-7xl">
-            <div className="flex items-center justify-between h-8">
+            <div className="flex items-center justify-between h-7 sm:h-8">
               <a
                 href="https://rusada.ru"
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center gap-2 transition-opacity hover:opacity-80"
               >
-                <div
-                  className="flex items-center justify-center px-2 py-0.5 rounded"
-                  style={{ backgroundColor: "#003087" }}
+                <span
+                  className="font-oswald font-bold text-white tracking-widest px-2 py-0.5 rounded"
+                  style={{ backgroundColor: "#003087", fontSize: 9 }}
                 >
-                  <span className="font-oswald font-bold text-white tracking-widest" style={{ fontSize: 10 }}>
-                    РУСАДА
-                  </span>
-                </div>
-                <span className="font-golos text-xs hidden sm:inline" style={{ color: "rgba(255,255,255,0.45)" }}>
-                  Российское антидопинговое агентство
+                  РУСАДА
                 </span>
-                <span className="font-golos text-xs sm:hidden" style={{ color: "rgba(255,255,255,0.45)" }}>
-                  rusada.ru
+                <span className="font-golos text-xs hidden sm:inline" style={{ color: "rgba(255,255,255,0.4)" }}>
+                  Российское антидопинговое агентство
                 </span>
               </a>
               <div className="flex items-center gap-3">
-                <a
-                  href="https://vk.com/sumospb"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-1.5 font-golos text-xs transition-opacity hover:opacity-80"
-                  style={{ color: "rgba(255,255,255,0.45)" }}
-                >
-                  <Icon name="Users" size={11} />
-                  <span className="hidden sm:inline">vk.com/sumospb</span>
-                  <span className="sm:hidden">ВКонтакте</span>
+                <a href="https://vk.com/sumospb" target="_blank" rel="noreferrer"
+                  className="font-golos text-xs transition-opacity hover:opacity-80"
+                  style={{ color: "rgba(255,255,255,0.4)" }}>
+                  vk.com/sumospb
                 </a>
-                <a
-                  href="https://sumospb.ru"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-1.5 font-golos text-xs transition-opacity hover:opacity-80"
-                  style={{ color: "rgba(255,255,255,0.45)" }}
-                >
-                  <Icon name="Globe" size={11} />
-                  <span className="hidden sm:inline">sumospb.ru</span>
+                <a href="https://sumospb.ru" target="_blank" rel="noreferrer"
+                  className="font-golos text-xs hidden sm:inline transition-opacity hover:opacity-80"
+                  style={{ color: "rgba(255,255,255,0.4)" }}>
+                  sumospb.ru
                 </a>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Основная навигация */}
+        {/* Основная шапка */}
         <div className="border-b border-[#2a2a2a]">
           <div className="container mx-auto px-3 sm:px-4 max-w-7xl">
-            <div className="flex items-center justify-between h-14 sm:h-16">
+            <div className="flex items-center justify-between h-14 sm:h-16 gap-2">
 
               {/* Логотип */}
-              <button onClick={() => handleNav("home")} className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <button
+                onClick={() => handleNav("home")}
+                className="flex items-center gap-2 sm:gap-3 flex-shrink-0"
+              >
                 <img
                   src={LOGO_URL}
                   alt="Федерация сумо СПб"
-                  className="w-9 h-9 sm:w-11 sm:h-11 rounded-full object-cover border-2 flex-shrink-0"
+                  className="w-9 h-9 sm:w-11 sm:h-11 rounded-full object-cover border-2"
                   style={{ borderColor: "var(--sumo-gold)" }}
                 />
-                <div className="text-left min-w-0">
-                  <div className="font-oswald font-bold text-white leading-tight tracking-wide" style={{ fontSize: "clamp(10px, 3vw, 14px)" }}>
+                <div className="text-left">
+                  <div className="font-oswald font-bold text-white leading-tight tracking-wide text-xs sm:text-sm">
                     ФЕДЕРАЦИЯ СУМО
                   </div>
-                  <div className="font-golos leading-tight hidden sm:block" style={{ color: "var(--sumo-gold)", fontSize: 11 }}>
+                  <div className="font-golos leading-tight hidden sm:block text-xs" style={{ color: "var(--sumo-gold)" }}>
                     Санкт-Петербург
                   </div>
                 </div>
               </button>
 
-              {/* Desktop nav */}
-              <nav className="hidden xl:flex items-center gap-4">
+              {/* Desktop nav — только на xl */}
+              <nav className="hidden xl:flex items-center gap-4 flex-1 justify-center">
                 {navItems.map((item) => (
                   <button
                     key={item.page}
@@ -134,123 +148,217 @@ export default function Header({ currentPage, navigate, cabinetRole, setCabinetR
               </nav>
 
               {/* Правая часть */}
-              <div className="flex items-center gap-1.5 sm:gap-2">
+              <div className="flex items-center gap-2 flex-shrink-0">
+
+                {/* Поддержать — скрываем на мобиле */}
                 <button
                   onClick={() => setSupportOpen(true)}
-                  className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded font-oswald text-xs font-semibold tracking-wide border"
+                  className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded font-oswald text-xs font-semibold tracking-wide border whitespace-nowrap"
                   style={{ borderColor: "rgba(201,150,58,0.4)", color: "var(--sumo-gold)", backgroundColor: "rgba(201,150,58,0.08)" }}
                 >
                   <Icon name="Heart" size={13} />
                   Поддержать
                 </button>
 
+                {/* Кабинет */}
                 {cabinetRole ? (
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => navigate(cabinetRole === "parent" ? "parent-cabinet" : "coach-cabinet")}
-                      className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded font-oswald text-xs sm:text-sm font-medium text-white"
+                      className="flex items-center gap-1.5 px-3 py-2 rounded font-oswald text-xs sm:text-sm font-medium text-white whitespace-nowrap"
                       style={{ backgroundColor: "var(--sumo-red)" }}
                     >
                       <Icon name="User" size={13} />
-                      <span className="hidden md:inline">{cabinetRole === "parent" ? "Личный кабинет" : "Кабинет тренера"}</span>
-                      <span className="md:hidden">Кабинет</span>
+                      <span className="hidden sm:inline">{cabinetRole === "parent" ? "Кабинет" : "Тренер"}</span>
                     </button>
-                    <button onClick={handleLogout} className="p-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>
+                    <button
+                      onClick={handleLogout}
+                      className="p-2 rounded"
+                      style={{ color: "rgba(255,255,255,0.5)" }}
+                      title="Выйти"
+                    >
                       <Icon name="LogOut" size={15} />
                     </button>
                   </div>
                 ) : (
-                  <div className="relative">
+                  <div className="relative" ref={dropdownRef}>
                     <button
-                      onClick={() => setCabinetMenuOpen(!cabinetMenuOpen)}
-                      className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-2 rounded font-oswald text-xs sm:text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                      onClick={() => setCabinetMenuOpen((v) => !v)}
+                      className="flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded font-oswald text-xs sm:text-sm font-semibold text-white whitespace-nowrap"
                       style={{ backgroundColor: "var(--sumo-red)" }}
                     >
                       <Icon name="LogIn" size={14} />
-                      <span>Войти</span>
-                      <Icon name="ChevronDown" size={12} />
+                      Войти
+                      <Icon name="ChevronDown" size={12} className={`transition-transform ${cabinetMenuOpen ? "rotate-180" : ""}`} />
                     </button>
+
+                    {/* Дропдаун — fixed позиция, всегда поверх */}
                     {cabinetMenuOpen && (
-                      <div className="absolute right-0 top-full mt-1 w-52 rounded border shadow-xl z-50" style={{ backgroundColor: "var(--sumo-dark)", borderColor: "#333" }}>
+                      <div
+                        className="absolute right-0 mt-2 w-56 rounded-lg border shadow-2xl overflow-hidden"
+                        style={{
+                          backgroundColor: "#1a1a1a",
+                          borderColor: "#333",
+                          top: "100%",
+                          zIndex: 10000,
+                        }}
+                      >
+                        <div className="px-4 py-2.5 border-b" style={{ borderColor: "#2a2a2a" }}>
+                          <span className="font-golos text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+                            Выберите тип входа
+                          </span>
+                        </div>
                         <button
-                          onClick={() => { setCabinetRole("parent"); setCabinetMenuOpen(false); navigate("parent-cabinet"); }}
-                          className="flex items-center gap-3 w-full px-4 py-3 text-left font-golos text-sm text-white hover:opacity-80 border-b"
-                          style={{ borderColor: "#333" }}
+                          onClick={() => {
+                            setCabinetRole("parent");
+                            setCabinetMenuOpen(false);
+                            navigate("parent-cabinet");
+                          }}
+                          className="flex items-center gap-3 w-full px-4 py-4 text-left font-golos text-sm text-white border-b transition-colors"
+                          style={{ borderColor: "#2a2a2a" }}
+                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.05)")}
+                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
                         >
-                          <Icon name="Users" size={16} style={{ color: "var(--sumo-gold)" }} />
-                          Кабинет родителя
+                          <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "rgba(201,150,58,0.15)" }}>
+                            <Icon name="Users" size={16} style={{ color: "var(--sumo-gold)" }} />
+                          </div>
+                          <div>
+                            <div className="font-semibold leading-tight">Кабинет родителя</div>
+                            <div className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>Посещаемость ребёнка</div>
+                          </div>
                         </button>
                         <button
-                          onClick={() => { setCabinetRole("coach"); setCabinetMenuOpen(false); navigate("coach-cabinet"); }}
-                          className="flex items-center gap-3 w-full px-4 py-3 text-left font-golos text-sm text-white hover:opacity-80"
+                          onClick={() => {
+                            setCabinetRole("coach");
+                            setCabinetMenuOpen(false);
+                            navigate("coach-cabinet");
+                          }}
+                          className="flex items-center gap-3 w-full px-4 py-4 text-left font-golos text-sm text-white transition-colors"
+                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.05)")}
+                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
                         >
-                          <Icon name="ClipboardList" size={16} style={{ color: "var(--sumo-gold)" }} />
-                          Кабинет тренера
+                          <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "rgba(201,150,58,0.15)" }}>
+                            <Icon name="ClipboardList" size={16} style={{ color: "var(--sumo-gold)" }} />
+                          </div>
+                          <div>
+                            <div className="font-semibold leading-tight">Кабинет тренера</div>
+                            <div className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>Отметка посещаемости</div>
+                          </div>
                         </button>
                       </div>
                     )}
                   </div>
                 )}
 
+                {/* Бургер — мобиле/планшет */}
                 <button
-                  onClick={() => setMenuOpen(!menuOpen)}
-                  className="xl:hidden p-2 text-white"
-                  aria-label="Открыть меню"
+                  onClick={() => setMenuOpen((v) => !v)}
+                  className="xl:hidden flex items-center justify-center w-10 h-10 rounded text-white"
+                  style={{ backgroundColor: menuOpen ? "rgba(255,255,255,0.1)" : "transparent" }}
+                  aria-label="Меню"
                 >
-                  <Icon name={menuOpen ? "X" : "Menu"} size={20} />
+                  <Icon name={menuOpen ? "X" : "Menu"} size={22} />
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Мобильное меню */}
+        {/* Мобильное меню — полноэкранное выдвигающееся */}
         {menuOpen && (
-          <div className="xl:hidden border-b" style={{ backgroundColor: "var(--sumo-dark)", borderColor: "#2a2a2a" }}>
+          <div
+            className="xl:hidden"
+            style={{
+              backgroundColor: "#111",
+              borderBottom: "1px solid #2a2a2a",
+              maxHeight: "calc(100svh - 90px)",
+              overflowY: "auto",
+            }}
+          >
+            {/* Кнопки кабинета — вверху мобильного меню */}
+            {!cabinetRole && (
+              <div className="p-3 grid grid-cols-2 gap-2 border-b" style={{ borderColor: "#222" }}>
+                <button
+                  onClick={() => { setCabinetRole("parent"); setMenuOpen(false); navigate("parent-cabinet"); }}
+                  className="flex flex-col items-center gap-1.5 py-3 px-2 rounded-lg font-golos text-xs font-semibold text-white"
+                  style={{ backgroundColor: "rgba(201,150,58,0.12)", border: "1px solid rgba(201,150,58,0.25)" }}
+                >
+                  <Icon name="Users" size={20} style={{ color: "var(--sumo-gold)" }} />
+                  <span style={{ color: "var(--sumo-gold)" }}>Кабинет родителя</span>
+                </button>
+                <button
+                  onClick={() => { setCabinetRole("coach"); setMenuOpen(false); navigate("coach-cabinet"); }}
+                  className="flex flex-col items-center gap-1.5 py-3 px-2 rounded-lg font-golos text-xs font-semibold text-white"
+                  style={{ backgroundColor: "rgba(123,31,31,0.2)", border: "1px solid rgba(123,31,31,0.4)" }}
+                >
+                  <Icon name="ClipboardList" size={20} style={{ color: "#ff6b6b" }} />
+                  <span style={{ color: "#ff6b6b" }}>Кабинет тренера</span>
+                </button>
+              </div>
+            )}
+
+            {cabinetRole && (
+              <div className="p-3 border-b" style={{ borderColor: "#222" }}>
+                <div className="flex items-center justify-between">
+                  <button
+                    onClick={() => { navigate(cabinetRole === "parent" ? "parent-cabinet" : "coach-cabinet"); setMenuOpen(false); }}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded font-oswald text-sm font-semibold text-white"
+                    style={{ backgroundColor: "var(--sumo-red)" }}
+                  >
+                    <Icon name="User" size={15} />
+                    {cabinetRole === "parent" ? "Мой кабинет" : "Кабинет тренера"}
+                  </button>
+                  <button
+                    onClick={() => { setCabinetRole(null); navigate("home"); setMenuOpen(false); }}
+                    className="flex items-center gap-1.5 px-3 py-2.5 rounded font-golos text-sm"
+                    style={{ color: "rgba(255,255,255,0.5)", border: "1px solid #333" }}
+                  >
+                    <Icon name="LogOut" size={14} />
+                    Выйти
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Навигация */}
             {navItems.map((item) => (
               <button
                 key={item.page}
                 onClick={() => handleNav(item.page)}
-                className="flex items-center w-full text-left px-5 py-4 font-oswald text-sm tracking-wide border-b"
+                className="flex items-center justify-between w-full px-5 py-4 font-oswald text-sm tracking-wide border-b"
                 style={{
                   color: currentPage === item.page ? "var(--sumo-gold)" : "rgba(255,255,255,0.85)",
-                  borderColor: "#2a2a2a",
-                  backgroundColor: currentPage === item.page ? "rgba(201,150,58,0.05)" : "transparent",
+                  borderColor: "#1e1e1e",
+                  backgroundColor: currentPage === item.page ? "rgba(201,150,58,0.04)" : "transparent",
                 }}
               >
                 {item.label}
+                {currentPage === item.page && <Icon name="ChevronRight" size={14} style={{ color: "var(--sumo-gold)" }} />}
               </button>
             ))}
-            <button
-              onClick={() => { setSupportOpen(true); setMenuOpen(false); }}
-              className="flex items-center gap-2 w-full px-5 py-4 font-oswald text-sm font-semibold border-t"
-              style={{ color: "var(--sumo-gold)", borderColor: "#333" }}
-            >
-              <Icon name="Heart" size={16} />
-              Поддержать федерацию
-            </button>
-            <a
-              href="https://vk.com/sumospb"
-              target="_blank"
-              rel="noreferrer"
-              onClick={() => setMenuOpen(false)}
-              className="flex items-center gap-2 w-full px-5 py-4 font-golos text-sm border-t"
-              style={{ color: "rgba(255,255,255,0.65)", borderColor: "#2a2a2a" }}
-            >
-              <Icon name="Users" size={16} style={{ color: "#4d8fcc" }} />
-              Сообщество ВКонтакте
-            </a>
-            <a
-              href="https://rusada.ru"
-              target="_blank"
-              rel="noreferrer"
-              onClick={() => setMenuOpen(false)}
-              className="flex items-center gap-2 w-full px-5 py-4 font-golos text-sm border-t"
-              style={{ color: "rgba(255,255,255,0.5)", borderColor: "#2a2a2a" }}
-            >
-              <span className="font-oswald font-bold text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: "#003087", color: "white" }}>РУСАДА</span>
-              rusada.ru
-            </a>
+
+            {/* Доп. действия */}
+            <div className="p-3 space-y-2">
+              <button
+                onClick={() => { setSupportOpen(true); setMenuOpen(false); }}
+                className="flex items-center gap-2 w-full px-4 py-3 rounded-lg font-oswald text-sm font-semibold"
+                style={{ backgroundColor: "rgba(201,150,58,0.1)", color: "var(--sumo-gold)", border: "1px solid rgba(201,150,58,0.2)" }}
+              >
+                <Icon name="Heart" size={16} />
+                Поддержать федерацию
+              </button>
+              <a
+                href="https://vk.com/sumospb"
+                target="_blank"
+                rel="noreferrer"
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-2 w-full px-4 py-3 rounded-lg font-golos text-sm"
+                style={{ backgroundColor: "rgba(0,119,255,0.1)", color: "#4d9fff", border: "1px solid rgba(0,119,255,0.2)" }}
+              >
+                <Icon name="Users" size={16} />
+                Сообщество ВКонтакте
+              </a>
+            </div>
           </div>
         )}
       </header>
