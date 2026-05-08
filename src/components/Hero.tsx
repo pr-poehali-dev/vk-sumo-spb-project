@@ -24,7 +24,7 @@ export default function Hero({ navigate }: HeroProps) {
       <SupportModal open={supportOpen} onClose={() => setSupportOpen(false)} />
 
       <section
-        className="relative flex items-center overflow-hidden"
+        className="relative flex items-center"
         style={{
           minHeight: "calc(100svh - 90px)",
           backgroundImage: `url(${BG_IMAGES[bgIdx]})`,
