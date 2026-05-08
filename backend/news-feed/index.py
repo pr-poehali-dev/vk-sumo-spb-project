@@ -1,42 +1,69 @@
 import json
 import urllib.request
+import urllib.parse
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 import re
 
-# Узкие ключевые слова — для приоритетных новостей
-SUMO_KEYWORDS = [
-    "сумо", "сумоист", "сумоисты", "sumo", "ёкодзуна",
-    "одзэки", "сэкивакэ", "комусуби", "маэгасира",
-    "дохё", "маваси", "басё",
+# Регулярки — ищем «сумо» как отдельное слово, а не «Сумы», «сумочка»
+SUMO_REGEXES = [
+    re.compile(r"\bсумо\b", re.IGNORECASE),
+    re.compile(r"сумоист", re.IGNORECASE),
+    re.compile(r"\bsumo\b", re.IGNORECASE),
+    re.compile(r"ёкодзуна", re.IGNORECASE),
+    re.compile(r"\bодзэки\b", re.IGNORECASE),
+    re.compile(r"сэкивакэ", re.IGNORECASE),
+    re.compile(r"комусуби", re.IGNORECASE),
+    re.compile(r"маэгасира", re.IGNORECASE),
+    re.compile(r"\bдохё\b", re.IGNORECASE),
+    re.compile(r"маваси", re.IGNORECASE),
+    re.compile(r"\bбасё\b", re.IGNORECASE),
+    re.compile(r"федерация сумо", re.IGNORECASE),
+    re.compile(r"чемпионат[а-я ]*сумо", re.IGNORECASE),
+    re.compile(r"первенств[а-я ]*сумо", re.IGNORECASE),
+    re.compile(r"кубок[а-я ]*сумо", re.IGNORECASE),
+    re.compile(r"турнир[а-я ]*сумо", re.IGNORECASE),
 ]
 
-# Широкие — единоборства (без политически нагруженных слов)
-WRESTLING_KEYWORDS = [
-    "единоборств", "борцов", "борец",
-    "дзюдо", "дзюдоист", "самбо", "самбист",
-    "греко-римск", "вольная борьба", "wrestling",
-    "татами", "пояс", "схватк",
-    "чемпионат мира по борьбе", "чемпионат россии по борьбе",
-    "первенство по борьбе", "первенство мира по дзюдо",
+# Стоп-паттерны — отсекаем мусор
+NEGATIVE_REGEXES = [
+    re.compile(r"\bсум[ыа]\b", re.IGNORECASE),  # город Сумы
+    re.compile(r"сумск", re.IGNORECASE),  # Сумская область
+    re.compile(r"сумочк", re.IGNORECASE),
+    re.compile(r"\bсумк[аиоу]?\b", re.IGNORECASE),
+    re.compile(r"потребсум", re.IGNORECASE),
 ]
 
 RSS_SOURCES = [
-    # Прямые RSS — без фильтра
+    # Прямые RSS Sports.ru — теги сумо
     {"url": "https://www.sports.ru/rss/summing/", "name": "Sports.ru"},
-    {"url": "https://www.sports.ru/rss/judo/", "name": "Sports.ru"},
-    # Крупные спортивные ленты
+    {"url": "https://www.sports.ru/tags/13388.xml", "name": "Sports.ru"},
+    # Спортивные новости — фильтруем по «сумо»
     {"url": "https://ria.ru/export/rss2/sport/index.xml", "name": "РИА Спорт"},
     {"url": "https://lenta.ru/rss/sport/", "name": "Lenta.ru"},
     {"url": "https://tass.ru/rss/v2.xml", "name": "ТАСС"},
     {"url": "https://www.mk.ru/sport/rss/", "name": "МК Спорт"},
     {"url": "https://rsport.ria.ru/export/rss2/index.xml", "name": "РИА Спорт"},
-    {"url": "https://sovsport.ru/rss", "name": "Советский спорт"},
     {"url": "https://sport24.ru/rss.xml", "name": "Sport24"},
     {"url": "https://sportbox.ru/rss", "name": "Sportbox"},
-    {"url": "https://www.gazeta.ru/export/rss/sport.xml", "name": "Газета.ру Спорт"},
+    {"url": "https://www.gazeta.ru/export/rss/sport.xml", "name": "Газета.ру"},
     {"url": "https://www.kommersant.ru/RSS/section-sport.xml", "name": "Коммерсантъ"},
-    {"url": "https://rg.ru/xml/index.xml", "name": "Российская газета"},
+]
+
+# Поисковые RSS — Яндекс.Новости и Google News по запросу «сумо»
+SEARCH_FEEDS = [
+    {
+        "url": "https://news.google.com/rss/search?q=%D1%81%D1%83%D0%BC%D0%BE+%D1%81%D0%BF%D0%BE%D1%80%D1%82+when:365d&hl=ru&gl=RU&ceid=RU:ru",
+        "name": "Google News",
+    },
+    {
+        "url": "https://news.google.com/rss/search?q=%D1%87%D0%B5%D0%BC%D0%BF%D0%B8%D0%BE%D0%BD%D0%B0%D1%82+%D0%BF%D0%BE+%D1%81%D1%83%D0%BC%D0%BE+when:365d&hl=ru&gl=RU&ceid=RU:ru",
+        "name": "Google News",
+    },
+    {
+        "url": "https://news.google.com/rss/search?q=%D1%84%D0%B5%D0%B4%D0%B5%D1%80%D0%B0%D1%86%D0%B8%D1%8F+%D1%81%D1%83%D0%BC%D0%BE+when:365d&hl=ru&gl=RU&ceid=RU:ru",
+        "name": "Google News",
+    },
 ]
 
 
@@ -45,7 +72,7 @@ def fetch_url(url: str, timeout: int = 6) -> str | None:
         req = urllib.request.Request(
             url,
             headers={
-                "User-Agent": "Mozilla/5.0 (compatible; SumoSPB-bot/2.0; +https://sumospb.ru)",
+                "User-Agent": "Mozilla/5.0 (compatible; SumoSPB-bot/2.0)",
                 "Accept": "application/rss+xml, application/xml, text/xml, */*",
                 "Accept-Language": "ru-RU,ru;q=0.9",
             }
@@ -81,13 +108,20 @@ def extract_image(item: ET.Element, desc: str) -> str:
     return ""
 
 
-def has_keyword(text: str, keywords: list[str]) -> bool:
-    lower = text.lower()
-    return any(kw.lower() in lower for kw in keywords)
+def has_negative(text: str) -> bool:
+    """Проверка на стоп-слова — Сумы, сумочка и т.д."""
+    return any(rx.search(text) for rx in NEGATIVE_REGEXES)
 
 
-def parse_rss(xml_text: str, source_name: str) -> list[dict]:
-    """Парсим все новости источника, классифицируем по релевантности."""
+def is_sumo_news(text: str) -> bool:
+    """Новость про сумо: есть совпадение с SUMO-регуляркой и нет стоп-слов."""
+    if has_negative(text):
+        return False
+    return any(rx.search(text) for rx in SUMO_REGEXES)
+
+
+def parse_rss(xml_text: str, source_name: str, force_include: bool = False) -> list[dict]:
+    """Парсим RSS. Если force_include=True (Sports.ru/sumo и Google News по сумо) — берём все."""
     items = []
     try:
         xml_text = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', '', xml_text)
@@ -100,23 +134,24 @@ def parse_rss(xml_text: str, source_name: str) -> list[dict]:
             desc = (item.findtext("description") or "").strip()
             pub_date = (item.findtext("pubDate") or "").strip()
             category = (item.findtext("category") or "").strip()
+            source_el = item.find("source")
+            real_source = source_name
+            if source_el is not None and source_el.text:
+                real_source = source_el.text.strip()[:30]
 
             if not title or not link:
                 continue
 
             desc_clean = re.sub(r"<[^>]+>", " ", desc).strip()
             desc_clean = re.sub(r"\s+", " ", desc_clean)
-            desc_clean = desc_clean[:300] + "…" if len(desc_clean) > 300 else desc_clean
+            desc_clean = desc_clean[:280] + "…" if len(desc_clean) > 280 else desc_clean
 
             haystack = f"{title} {desc_clean} {category}"
 
-            # Определяем приоритет
-            if has_keyword(haystack, SUMO_KEYWORDS):
-                priority = 1  # Сумо — самый высокий
-            elif has_keyword(haystack, WRESTLING_KEYWORDS):
-                priority = 2  # Борьба, дзюдо, самбо
-            else:
-                priority = 3  # Просто спорт (запасной вариант)
+            # ВСЕГДА проверяем строго: нужно совпадение с сумо + нет стоп-слов
+            # Это убирает «Сумы», «сумочка», «потребсумо» из любого источника
+            if not is_sumo_news(haystack):
+                continue
 
             image = extract_image(item, desc)
 
@@ -126,9 +161,8 @@ def parse_rss(xml_text: str, source_name: str) -> list[dict]:
                 "description": desc_clean,
                 "pub_date": pub_date,
                 "image": image,
-                "source": source_name,
+                "source": real_source,
                 "category": category,
-                "priority": priority,
             })
     except Exception:
         pass
@@ -136,7 +170,13 @@ def parse_rss(xml_text: str, source_name: str) -> list[dict]:
 
 
 def parse_date(pub_date_str: str) -> datetime:
-    for fmt in ["%a, %d %b %Y %H:%M:%S %z", "%a, %d %b %Y %H:%M:%S %Z", "%Y-%m-%dT%H:%M:%S%z"]:
+    formats = [
+        "%a, %d %b %Y %H:%M:%S %z",
+        "%a, %d %b %Y %H:%M:%S %Z",
+        "%Y-%m-%dT%H:%M:%S%z",
+        "%a, %d %b %Y %H:%M:%S GMT",
+    ]
+    for fmt in formats:
         try:
             return datetime.strptime(pub_date_str[:31].strip(), fmt)
         except Exception:
@@ -145,7 +185,7 @@ def parse_date(pub_date_str: str) -> datetime:
 
 
 def handler(event: dict, context) -> dict:
-    """Агрегирует RSS-новости. Приоритет: сумо → единоборства → спорт. Возвращает до 30 новостей."""
+    """Только новости о сумо. Тянет за последний год из 13 источников + Google News."""
 
     if event.get("httpMethod") == "OPTIONS":
         return {
@@ -160,14 +200,25 @@ def handler(event: dict, context) -> dict:
 
     all_items: list[dict] = []
 
-    for source in RSS_SOURCES:
+    # Прямые сумо-источники — берём все
+    for source in RSS_SOURCES[:2]:
         xml_text = fetch_url(source["url"])
-        if not xml_text:
-            continue
-        parsed = parse_rss(xml_text, source["name"])
-        all_items.extend(parsed)
+        if xml_text:
+            all_items.extend(parse_rss(xml_text, source["name"], force_include=True))
 
-    # Дедуплицируем
+    # Общие спорт-источники — фильтруем по «сумо»
+    for source in RSS_SOURCES[2:]:
+        xml_text = fetch_url(source["url"])
+        if xml_text:
+            all_items.extend(parse_rss(xml_text, source["name"], force_include=False))
+
+    # Google News — поисковые ленты
+    for source in SEARCH_FEEDS:
+        xml_text = fetch_url(source["url"], timeout=8)
+        if xml_text:
+            all_items.extend(parse_rss(xml_text, source["name"], force_include=True))
+
+    # Дедупликация по ссылке
     seen: set[str] = set()
     unique = []
     for item in all_items:
@@ -176,31 +227,10 @@ def handler(event: dict, context) -> dict:
             seen.add(key)
             unique.append(item)
 
-    # Группируем по приоритету
-    p1 = [x for x in unique if x["priority"] == 1]  # сумо
-    p2 = [x for x in unique if x["priority"] == 2]  # борьба/дзюдо
-    p3 = [x for x in unique if x["priority"] == 3]  # обычный спорт
+    # Сортировка: свежие — первыми
+    unique.sort(key=lambda x: parse_date(x["pub_date"]), reverse=True)
 
-    # Сортируем каждую группу по дате
-    for group in (p1, p2, p3):
-        group.sort(key=lambda x: parse_date(x["pub_date"]), reverse=True)
-
-    # Собираем итог:
-    # - все новости про сумо
-    # - дополняем единоборствами до 15
-    # - если совсем мало — добавляем спорт до 25
-    result = list(p1)
-
-    if len(result) < 15:
-        result.extend(p2[: 15 - len(result)])
-    if len(result) < 25:
-        result.extend(p3[: 25 - len(result)])
-
-    result = result[:30]
-
-    # Удаляем priority перед отдачей
-    for item in result:
-        item.pop("priority", None)
+    result = unique[:30]
 
     return {
         "statusCode": 200,
