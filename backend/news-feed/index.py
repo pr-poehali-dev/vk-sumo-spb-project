@@ -4,69 +4,43 @@ import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 import re
 
+# Узкие ключевые слова — для приоритетных новостей
 SUMO_KEYWORDS = [
-    "сумо", "сумоист", "сумоисты", "sumo", "единоборств",
-    "борьба", "дзюдо", "самбо", "федерация сумо",
-    "чемпионат по сумо", "первенство по сумо",
+    "сумо", "сумоист", "сумоисты", "sumo", "ёкодзуна",
+    "одзэки", "сэкивакэ", "комусуби", "маэгасира",
+    "дохё", "маваси", "басё",
+]
+
+# Широкие — единоборства (без политически нагруженных слов)
+WRESTLING_KEYWORDS = [
+    "единоборств", "борцов", "борец",
+    "дзюдо", "дзюдоист", "самбо", "самбист",
+    "греко-римск", "вольная борьба", "wrestling",
+    "татами", "пояс", "схватк",
+    "чемпионат мира по борьбе", "чемпионат россии по борьбе",
+    "первенство по борьбе", "первенство мира по дзюдо",
 ]
 
 RSS_SOURCES = [
-    # Прямые RSS о сумо
-    {
-        "url": "https://www.sports.ru/rss/summing/",
-        "name": "Sports.ru",
-        "filter": False,
-    },
-    {
-        "url": "https://www.sports.ru/tags/13388.xml",
-        "name": "Sports.ru — Сумо",
-        "filter": False,
-    },
-    # Крупные спортивные ленты — фильтруем по ключевым словам
-    {
-        "url": "https://ria.ru/export/rss2/sport/index.xml",
-        "name": "РИА Спорт",
-        "filter": True,
-    },
-    {
-        "url": "https://lenta.ru/rss/sport/",
-        "name": "Lenta.ru",
-        "filter": True,
-    },
-    {
-        "url": "https://tass.ru/rss/v2.xml",
-        "name": "ТАСС",
-        "filter": True,
-    },
-    {
-        "url": "https://www.mk.ru/sport/rss/",
-        "name": "МК Спорт",
-        "filter": True,
-    },
-    {
-        "url": "https://rsport.ria.ru/export/rss2/index.xml",
-        "name": "РИА Спорт",
-        "filter": True,
-    },
-    {
-        "url": "https://sovsport.ru/rss",
-        "name": "Советский спорт",
-        "filter": True,
-    },
-    {
-        "url": "https://sport24.ru/rss.xml",
-        "name": "Sport24",
-        "filter": True,
-    },
-    {
-        "url": "https://sportbox.ru/rss",
-        "name": "Sportbox",
-        "filter": True,
-    },
+    # Прямые RSS — без фильтра
+    {"url": "https://www.sports.ru/rss/summing/", "name": "Sports.ru"},
+    {"url": "https://www.sports.ru/rss/judo/", "name": "Sports.ru"},
+    # Крупные спортивные ленты
+    {"url": "https://ria.ru/export/rss2/sport/index.xml", "name": "РИА Спорт"},
+    {"url": "https://lenta.ru/rss/sport/", "name": "Lenta.ru"},
+    {"url": "https://tass.ru/rss/v2.xml", "name": "ТАСС"},
+    {"url": "https://www.mk.ru/sport/rss/", "name": "МК Спорт"},
+    {"url": "https://rsport.ria.ru/export/rss2/index.xml", "name": "РИА Спорт"},
+    {"url": "https://sovsport.ru/rss", "name": "Советский спорт"},
+    {"url": "https://sport24.ru/rss.xml", "name": "Sport24"},
+    {"url": "https://sportbox.ru/rss", "name": "Sportbox"},
+    {"url": "https://www.gazeta.ru/export/rss/sport.xml", "name": "Газета.ру Спорт"},
+    {"url": "https://www.kommersant.ru/RSS/section-sport.xml", "name": "Коммерсантъ"},
+    {"url": "https://rg.ru/xml/index.xml", "name": "Российская газета"},
 ]
 
 
-def fetch_url(url: str, timeout: int = 7) -> str | None:
+def fetch_url(url: str, timeout: int = 6) -> str | None:
     try:
         req = urllib.request.Request(
             url,
@@ -90,16 +64,15 @@ def fetch_url(url: str, timeout: int = 7) -> str | None:
 
 def extract_image(item: ET.Element, desc: str) -> str:
     ns = {"media": "http://search.yahoo.com/mrss/"}
-    # enclosure
     enc = item.find("enclosure")
     if enc is not None and enc.get("url"):
-        return enc.get("url", "")
-    # media:content
+        url = enc.get("url", "")
+        if url.startswith("http"):
+            return url
     for tag in ["media:content", "media:thumbnail"]:
         el = item.find(tag, ns)
         if el is not None and el.get("url"):
             return el.get("url", "")
-    # из description
     m = re.search(r'<img[^>]+src=["\']([^"\']+)["\']', desc, re.IGNORECASE)
     if m:
         url = m.group(1)
@@ -108,10 +81,15 @@ def extract_image(item: ET.Element, desc: str) -> str:
     return ""
 
 
-def parse_rss(xml_text: str, source_name: str, filter_kw: bool) -> list[dict]:
+def has_keyword(text: str, keywords: list[str]) -> bool:
+    lower = text.lower()
+    return any(kw.lower() in lower for kw in keywords)
+
+
+def parse_rss(xml_text: str, source_name: str) -> list[dict]:
+    """Парсим все новости источника, классифицируем по релевантности."""
     items = []
     try:
-        # Убираем невалидные символы
         xml_text = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', '', xml_text)
         root = ET.fromstring(xml_text)
         channel = root.find("channel") or root
@@ -130,11 +108,15 @@ def parse_rss(xml_text: str, source_name: str, filter_kw: bool) -> list[dict]:
             desc_clean = re.sub(r"\s+", " ", desc_clean)
             desc_clean = desc_clean[:300] + "…" if len(desc_clean) > 300 else desc_clean
 
-            # Фильтр по ключевым словам
-            if filter_kw:
-                haystack = (title + " " + desc_clean + " " + category).lower()
-                if not any(kw.lower() in haystack for kw in SUMO_KEYWORDS):
-                    continue
+            haystack = f"{title} {desc_clean} {category}"
+
+            # Определяем приоритет
+            if has_keyword(haystack, SUMO_KEYWORDS):
+                priority = 1  # Сумо — самый высокий
+            elif has_keyword(haystack, WRESTLING_KEYWORDS):
+                priority = 2  # Борьба, дзюдо, самбо
+            else:
+                priority = 3  # Просто спорт (запасной вариант)
 
             image = extract_image(item, desc)
 
@@ -146,6 +128,7 @@ def parse_rss(xml_text: str, source_name: str, filter_kw: bool) -> list[dict]:
                 "image": image,
                 "source": source_name,
                 "category": category,
+                "priority": priority,
             })
     except Exception:
         pass
@@ -162,7 +145,7 @@ def parse_date(pub_date_str: str) -> datetime:
 
 
 def handler(event: dict, context) -> dict:
-    """Агрегирует RSS-новости о сумо из 10 источников, возвращает до 40 новостей."""
+    """Агрегирует RSS-новости. Приоритет: сумо → единоборства → спорт. Возвращает до 30 новостей."""
 
     if event.get("httpMethod") == "OPTIONS":
         return {
@@ -181,10 +164,10 @@ def handler(event: dict, context) -> dict:
         xml_text = fetch_url(source["url"])
         if not xml_text:
             continue
-        parsed = parse_rss(xml_text, source["name"], filter_kw=source.get("filter", True))
+        parsed = parse_rss(xml_text, source["name"])
         all_items.extend(parsed)
 
-    # Дедупликация по ссылке
+    # Дедуплицируем
     seen: set[str] = set()
     unique = []
     for item in all_items:
@@ -193,17 +176,38 @@ def handler(event: dict, context) -> dict:
             seen.add(key)
             unique.append(item)
 
-    # Сортировка по дате убывания
-    unique.sort(key=lambda x: parse_date(x["pub_date"]), reverse=True)
+    # Группируем по приоритету
+    p1 = [x for x in unique if x["priority"] == 1]  # сумо
+    p2 = [x for x in unique if x["priority"] == 2]  # борьба/дзюдо
+    p3 = [x for x in unique if x["priority"] == 3]  # обычный спорт
 
-    result = unique[:40]
+    # Сортируем каждую группу по дате
+    for group in (p1, p2, p3):
+        group.sort(key=lambda x: parse_date(x["pub_date"]), reverse=True)
+
+    # Собираем итог:
+    # - все новости про сумо
+    # - дополняем единоборствами до 15
+    # - если совсем мало — добавляем спорт до 25
+    result = list(p1)
+
+    if len(result) < 15:
+        result.extend(p2[: 15 - len(result)])
+    if len(result) < 25:
+        result.extend(p3[: 25 - len(result)])
+
+    result = result[:30]
+
+    # Удаляем priority перед отдачей
+    for item in result:
+        item.pop("priority", None)
 
     return {
         "statusCode": 200,
         "headers": {
             "Access-Control-Allow-Origin": "*",
             "Content-Type": "application/json; charset=utf-8",
-            "Cache-Control": "public, max-age=600",
+            "Cache-Control": "public, max-age=300",
         },
         "body": json.dumps({"items": result, "count": len(result)}, ensure_ascii=False),
     }

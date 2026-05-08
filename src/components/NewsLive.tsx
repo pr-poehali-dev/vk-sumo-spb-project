@@ -41,7 +41,8 @@ export default function NewsLive({ navigate }: NewsLiveProps) {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    fetch(NEWS_FEED_URL)
+    // Добавляем timestamp для обхода кэша
+    fetch(`${NEWS_FEED_URL}?t=${Date.now()}`, { cache: "no-store" })
       .then((r) => r.json())
       .then((data) => {
         setItems(data.items || []);
