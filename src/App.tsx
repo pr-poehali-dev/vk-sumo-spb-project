@@ -14,6 +14,7 @@ import Contacts from "@/components/Contacts";
 import Footer from "@/components/Footer";
 import ParentCabinet from "@/components/cabinets/ParentCabinet";
 import CoachCabinet from "@/components/cabinets/CoachCabinet";
+import ChatWidget from "@/components/ChatWidget";
 
 export type Page =
   | "home"
@@ -39,6 +40,7 @@ export default function App() {
   return (
     <TooltipProvider>
       <Toaster />
+      <ChatWidget />
       <div className="min-h-screen bg-background">
         <Header currentPage={currentPage} navigate={navigate} cabinetRole={cabinetRole} setCabinetRole={setCabinetRole} />
 
@@ -47,9 +49,7 @@ export default function App() {
             <Hero navigate={navigate} />
             <About navigate={navigate} />
             <Programs navigate={navigate} />
-            <Schedule />
             <NewsLive navigate={navigate} />
-            <Coaches navigate={navigate} />
             <Contacts />
           </>
         )}

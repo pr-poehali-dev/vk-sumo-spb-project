@@ -86,12 +86,12 @@ export default function Hero({ navigate }: HeroProps) {
                 Записаться на тренировку
               </button>
               <button
-                onClick={() => setSupportOpen(true)}
+                onClick={() => navigate("about")}
                 className="flex items-center justify-center gap-2 px-6 py-3.5 font-oswald font-semibold tracking-wide border-2 text-sm sm:text-base"
-                style={{ borderColor: "rgba(201,150,58,0.6)", color: "var(--sumo-gold)" }}
+                style={{ borderColor: "rgba(255,255,255,0.35)", color: "white" }}
               >
-                <Icon name="Heart" size={16} />
-                Поддержать федерацию
+                О федерации
+                <Icon name="ArrowRight" size={16} />
               </button>
             </div>
 
