@@ -13,6 +13,7 @@ import Gallery from "@/components/Gallery";
 import Contacts from "@/components/Contacts";
 import Footer from "@/components/Footer";
 import Privacy from "@/pages/Privacy";
+import Sponsors from "@/pages/Sponsors";
 import ParentCabinet from "@/components/cabinets/ParentCabinet";
 import CoachCabinet from "@/components/cabinets/CoachCabinet";
 import ChatWidget from "@/components/ChatWidget";
@@ -26,6 +27,7 @@ export type Page =
   | "news"
   | "gallery"
   | "contacts"
+  | "sponsors"
   | "privacy"
   | "parent-cabinet"
   | "coach-cabinet";
@@ -39,7 +41,7 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const showFooter = currentPage !== "parent-cabinet" && currentPage !== "coach-cabinet" && currentPage !== "privacy";
+  const showFooter = currentPage !== "parent-cabinet" && currentPage !== "coach-cabinet" && currentPage !== "privacy" && currentPage !== "sponsors";
 
   return (
     <TooltipProvider>
@@ -66,6 +68,7 @@ export default function App() {
         {currentPage === "gallery" && <Gallery />}
         {currentPage === "contacts" && <Contacts full />}
         {currentPage === "privacy" && <Privacy />}
+        {currentPage === "sponsors" && <Sponsors />}
         {currentPage === "parent-cabinet" && <ParentCabinet navigate={navigate} />}
         {currentPage === "coach-cabinet" && <CoachCabinet navigate={navigate} />}
 

@@ -10,6 +10,14 @@ interface FooterProps {
 // Партнёры с текстовыми эмблемами вместо битых внешних картинок
 const partners = [
   {
+    name: "ООО «САЙНЭД» — Генеральный спонсор",
+    url: "https://ooosined.ru",
+    initials: "САЙНЭД",
+    sub: "ooosined.ru",
+    bg: "#1a3a5c",
+    emoji: "⛽",
+  },
+  {
     name: "Федерация сумо России",
     url: "https://sumo-russia.ru",
     initials: "ФСР",
@@ -156,6 +164,7 @@ export default function Footer({ navigate }: FooterProps) {
                 { label: "Тренеры", page: "coaches" as Page },
                 { label: "Новости", page: "news" as Page },
                 { label: "Галерея", page: "gallery" as Page },
+                { label: "Спонсоры", page: "sponsors" as Page },
                 { label: "Контакты", page: "contacts" as Page },
               ].map((item) => (
                 <button

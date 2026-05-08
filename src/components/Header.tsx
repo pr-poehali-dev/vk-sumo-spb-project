@@ -21,6 +21,7 @@ const navItems: { label: string; page: Page }[] = [
   { label: "Тренеры", page: "coaches" },
   { label: "Новости", page: "news" },
   { label: "Галерея", page: "gallery" },
+  { label: "Спонсоры", page: "sponsors" },
   { label: "Контакты", page: "contacts" },
 ];
 
