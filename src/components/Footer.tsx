@@ -175,24 +175,43 @@ export default function Footer({ navigate }: FooterProps) {
               КОНТАКТЫ
             </div>
             <div className="space-y-2 font-golos text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
+              <div>
+                <a href="tel:+78121234567" className="flex items-center gap-1.5 hover:text-white">
+                  <Icon name="Phone" size={12} />
+                  +7 (812) 123-45-67
+                </a>
+              </div>
               <div><a href="https://sumospb.ru" target="_blank" rel="noreferrer" className="hover:text-white">sumospb.ru</a></div>
               <div><a href="https://vk.com/sumospb" target="_blank" rel="noreferrer" className="hover:text-white">vk.com/sumospb</a></div>
               <div><a href="mailto:sumospb@mail.ru" className="hover:text-white">sumospb@mail.ru</a></div>
-              <div className="pt-2">г. Санкт-Петербург</div>
+              <div className="pt-1">г. Санкт-Петербург</div>
             </div>
           </div>
         </div>
 
-        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 border-t" style={{ borderColor: "#1a1a1a" }}>
-          <div className="font-golos text-xs text-center sm:text-left" style={{ color: "rgba(255,255,255,0.3)" }}>
-            © Федерация сумо Санкт-Петербурга. Все права защищены.
+        <div className="pt-5 border-t" style={{ borderColor: "#1a1a1a" }}>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-3">
+            <div className="font-golos text-xs text-center sm:text-left" style={{ color: "rgba(255,255,255,0.3)" }}>
+              © Федерация сумо Санкт-Петербурга. Все права защищены.
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-3 font-golos text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
+              <a href="tel:+78121234567" className="hover:text-white flex items-center gap-1">
+                <Icon name="Phone" size={11} />+7 (812) 123-45-67
+              </a>
+              <span>·</span>
+              <a href="https://vk.com/sumospb" target="_blank" rel="noreferrer" className="hover:text-white">ВКонтакте</a>
+              <span>·</span>
+              <a href="https://rusada.ru" target="_blank" rel="noreferrer" className="hover:text-white">РУСАДА</a>
+            </div>
           </div>
-          <div className="flex items-center gap-4 font-golos text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
-            <a href="https://sumospb.ru" target="_blank" rel="noreferrer" className="hover:text-white">sumospb.ru</a>
-            <span>·</span>
-            <a href="https://vk.com/sumospb" target="_blank" rel="noreferrer" className="hover:text-white">ВКонтакте</a>
-            <span>·</span>
-            <a href="https://rusada.ru" target="_blank" rel="noreferrer" className="hover:text-white">РУСАДА</a>
+          <div className="text-center">
+            <button
+              onClick={() => navigate("privacy")}
+              className="font-golos text-xs hover:text-white transition-colors"
+              style={{ color: "rgba(255,255,255,0.25)" }}
+            >
+              Политика конфиденциальности · Персональные данные не собираются
+            </button>
           </div>
         </div>
       </div>

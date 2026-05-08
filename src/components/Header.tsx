@@ -233,15 +233,17 @@ export default function Header({ currentPage, navigate, cabinetRole, setCabinetR
                 </span>
               </a>
               <div className="flex items-center gap-3">
+                <a href="tel:+78121234567"
+                  className="flex items-center gap-1 font-golos text-xs transition-opacity hover:opacity-80"
+                  style={{ color: "rgba(255,255,255,0.5)" }}>
+                  <Icon name="Phone" size={10} />
+                  <span className="hidden sm:inline">+7 (812) 123-45-67</span>
+                  <span className="sm:hidden">Позвонить</span>
+                </a>
                 <a href="https://vk.com/sumospb" target="_blank" rel="noreferrer"
-                  className="font-golos text-xs transition-opacity hover:opacity-80"
+                  className="font-golos text-xs transition-opacity hover:opacity-80 hidden sm:inline"
                   style={{ color: "rgba(255,255,255,0.4)" }}>
                   vk.com/sumospb
-                </a>
-                <a href="https://sumospb.ru" target="_blank" rel="noreferrer"
-                  className="font-golos text-xs hidden sm:inline transition-opacity hover:opacity-80"
-                  style={{ color: "rgba(255,255,255,0.4)" }}>
-                  sumospb.ru
                 </a>
               </div>
             </div>
